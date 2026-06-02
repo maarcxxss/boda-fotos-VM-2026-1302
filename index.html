@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Boda ❤️ Fotos</title>
+
+<style>
+
+body{
+    font-family: Arial;
+    text-align: center;
+    margin: 40px;
+    background: #fafafa;
+}
+
+h1{
+    font-size: 32px;
+}
+
+button{
+    font-size: 20px;
+    padding: 18px 25px;
+    border: none;
+    background: #e91e63;
+    color: white;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+button:hover{
+    background: #d81b60;
+}
+
+#gallery {
+    margin-top: 40px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 15px;
+}
+
+#gallery img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+#gallery img:hover {
+    transform: scale(1.05);
+}
+
+.toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #4caf50;
+    color: white;
+    padding: 15px 25px;
+    border-radius: 10px;
+    font-size: 16px;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-10px);
+}
+
+.lightbox {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.9);
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
+
+.lightbox img {
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 10px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>📸 Boda de Mamá</h1>
+
+<p>Sube aquí fotos y vídeos del evento 💍❤️</p>
+
+<button id="upload_widget">Subir fotos</button>
+
+<div id="gallery"></div>
+
+<div id="lightbox" class="lightbox">
+    <img id="lightbox-img">
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="https://upload-widget.cloudinary.com/latest/global/all.js"></script>
+
+<script>
+
+const gallery = document.getElementById("gallery");
+const toast = document.getElementById("toast");
+
+const lightbox = document.getElementById("lightbox");
+const lightboxImg = document.getElementById("lightbox-img");
+
+lightbox.addEventListener("click", () => {
+    lightbox.style.display = "none";
+});
+
+function showToast(message, isError = false) {
+    toast.innerText = message;
+    toast.style.background = isError ? "#e53935" : "#4caf50";
+    toast.classList.add("show");
+
+    setTimeout(() => {
+        toast.classList.remove("show");
+    }, 2500);
+}
+
+const widget = cloudinary.createUploadWidget({
+    cloudName: "dczhox5iy",
+    uploadPreset: "boda_mama",
+    multiple: true,
+    sources: ["local", "camera"],
+    showAdvancedOptions: false
+}, (error, result) => {
+
+    if (result && result.event === "upload-added") {
+        showToast("📤 Preparando subida...");
+    }
+
+    if (result && result.event === "success") {
+
+        showToast("📸 Foto subida correctamente");
+
+        const img = document.createElement("img");
+        img.src = result.info.secure_url;
+
+        img.addEventListener("click", () => {
+            lightboxImg.src = result.info.secure_url;
+            lightbox.style.display = "flex";
+        });
+
+        gallery.appendChild(img);
+    }
+
+    if (error) {
+        showToast("❌ Error al subir foto", true);
+    }
+});
+
+document.getElementById("upload_widget").addEventListener("click", () => {
+    widget.open();
+});
+
+</script>
+
+</body>
+</html>
