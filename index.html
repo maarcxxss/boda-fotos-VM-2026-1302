@@ -244,6 +244,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
+let currentVideo = null;
 let mode = "photos";
 let items = [];
 
@@ -308,11 +309,11 @@ function openMedia(url, type) {
     content.innerHTML = "";
 
     if (type === "image") {
-        content.innerHTML = `<img src="${url}">`;
+        content.innerHTML = `<img id="activeMedia" src="${url}">`;
+        currentVideo = null;
     } else {
-        content.innerHTML = `
-            <video src="${url}" controls autoplay></video>
-        `;
+        content.innerHTML = `<video id="activeMedia" src="${url}" controls autoplay></video>`;
+        currentVideo = content.querySelector("video");
     }
 
     lb.style.display = "flex";
@@ -320,9 +321,16 @@ function openMedia(url, type) {
 
 document.getElementById("lightbox").onclick = (e) => {
     if (e.target.id === "lightbox") {
+
+        const video = document.querySelector("#lightbox video");
+        if (video) {
+            video.pause();
+            video.currentTime = 0;
+        }
+
         document.getElementById("lightbox").style.display = "none";
     }
-}
+};
 
 /* UPLOAD */
 const widget = cloudinary.createUploadWidget({
