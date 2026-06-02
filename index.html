@@ -244,9 +244,14 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
+let currentIndex = 0;
+let currentList = [];
+
 let scale = 1;
 let initialDistance = null;
+
 let currentVideo = null;
+
 let mode = "photos";
 let items = [];
 
@@ -280,6 +285,8 @@ function setActive() {
 
 /* RENDER */
 function render() {
+    currentList = items.filter(i => i.type === mode);
+
     gallery.innerHTML = "";
 
     let filtered = items.filter(i => i.type === mode);
@@ -305,6 +312,9 @@ function render() {
 
 /* LIGHTBOX */
 function openMedia(url, type) {
+
+    currentIndex = currentList.findIndex(i => i.url === url);
+
     const lb = document.getElementById("lightbox");
     const content = document.getElementById("lightboxContent");
 
@@ -319,6 +329,44 @@ function openMedia(url, type) {
     }
 
     lb.style.display = "flex";
+}
+
+let startX = 0;
+
+document.getElementById("lightbox").addEventListener("touchstart", (e) => {
+    startX = e.touches[0].clientX;
+});
+
+document.getElementById("lightbox").addEventListener("touchend", (e) => {
+    let endX = e.changedTouches[0].clientX;
+
+    let diff = startX - endX;
+
+    if (Math.abs(diff) > 50) {
+
+        if (diff > 0) {
+            nextMedia();
+        } else {
+            prevMedia();
+        }
+    }
+});
+
+function nextMedia() {
+    currentIndex = (currentIndex + 1) % currentList.length;
+    loadCurrent();
+}
+
+function prevMedia() {
+    currentIndex = (currentIndex - 1 + currentList.length) % currentList.length;
+    loadCurrent();
+}
+
+function loadCurrent() {
+
+    const item = currentList[currentIndex];
+
+    openMedia(item.url, item.type);
 }
 
 /* pinch zoom real (móvil) */
