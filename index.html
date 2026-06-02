@@ -246,6 +246,7 @@ const db = firebase.database();
 
 let currentIndex = 0;
 let currentList = [];
+let currentType = "photos";
 
 let scale = 1;
 let initialDistance = null;
@@ -313,23 +314,33 @@ function render() {
 /* LIGHTBOX */
 function openMedia(url, type) {
 
+    currentType = type;
+    currentList = items.filter(i => i.type === type);
+
     currentIndex = currentList.findIndex(i => i.url === url);
 
-    const lb = document.getElementById("lightbox");
-    const content = document.getElementById("lightboxContent");
+    showMedia();
+}
 
-    content.innerHTML = "";
+function showMedia() {
 
-    if (type === "image") {
-        content.innerHTML = `<img id="activeMedia" src="${url}">`;
-        currentVideo = null;
+    const item = currentList[currentIndex];
+
+    const lb = document.getElementById("lightboxContent");
+
+    lb.innerHTML = "";
+
+    if (!item) return;
+
+    if (item.type === "photos") {
+        lb.innerHTML = `<img id="activeMedia" src="${item.url}">`;
     } else {
-        content.innerHTML = `<video id="activeMedia" src="${url}" controls autoplay></video>`;
-        currentVideo = content.querySelector("video");
+        lb.innerHTML = `<video id="activeMedia" src="${item.url}" controls autoplay></video>`;
     }
 
-    lb.style.display = "flex";
+    document.getElementById("lightbox").style.display = "flex";
 }
+
 
 let startX = 0;
 
@@ -338,8 +349,8 @@ document.getElementById("lightbox").addEventListener("touchstart", (e) => {
 });
 
 document.getElementById("lightbox").addEventListener("touchend", (e) => {
-    let endX = e.changedTouches[0].clientX;
 
+    let endX = e.changedTouches[0].clientX;
     let diff = startX - endX;
 
     if (Math.abs(diff) > 50) {
@@ -353,13 +364,21 @@ document.getElementById("lightbox").addEventListener("touchend", (e) => {
 });
 
 function nextMedia() {
+
+    if (currentList.length === 0) return;
+
     currentIndex = (currentIndex + 1) % currentList.length;
-    loadCurrent();
+
+    showMedia();
 }
 
 function prevMedia() {
+
+    if (currentList.length === 0) return;
+
     currentIndex = (currentIndex - 1 + currentList.length) % currentList.length;
-    loadCurrent();
+
+    showMedia();
 }
 
 function loadCurrent() {
