@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,102 +7,113 @@
 <title>Boda ❤️ Fotos</title>
 
 <style>
-
-body{
-    font-family: Arial;
+body {
+    font-family: Arial, sans-serif;
     text-align: center;
-    margin: 40px;
+    margin: 0;
+    padding: 30px;
     background: #fafafa;
 }
 
-h1{
-    font-size: 32px;
-}
+h1 { font-size: 34px; }
 
-button{
-    font-size: 20px;
-    padding: 18px 25px;
+p { color: #666; }
+
+/* BOTÓN */
+button {
+    font-size: 18px;
+    padding: 16px 22px;
     border: none;
-    background: #e91e63;
+    background: linear-gradient(135deg, #e91e63, #ff4081);
     color: white;
-    border-radius: 10px;
+    border-radius: 12px;
     cursor: pointer;
+    transition: 0.2s;
 }
 
-button:hover{
-    background: #d81b60;
+button:hover {
+    transform: translateY(-2px);
 }
 
+/* CONTADOR */
+#counter {
+    margin-top: 10px;
+    font-weight: bold;
+    color: #444;
+}
+
+/* GALERÍA */
 #gallery {
-    margin-top: 40px;
+    margin-top: 30px;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 15px;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
 }
 
 #gallery img {
     width: 100%;
-    height: 180px;
+    height: 160px;
     object-fit: cover;
-    border-radius: 12px;
+    border-radius: 14px;
     cursor: pointer;
-    transition: transform 0.2s;
+    opacity: 0;
+    animation: fadeIn 0.3s ease forwards;
+    transition: 0.2s;
 }
 
 #gallery img:hover {
     transform: scale(1.05);
 }
 
-.toast {
-    position: fixed;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #4caf50;
-    color: white;
-    padding: 15px 25px;
-    border-radius: 10px;
-    font-size: 16px;
-    opacity: 0;
-    transition: opacity 0.3s, transform 0.3s;
-    pointer-events: none;
+@keyframes fadeIn {
+    to { opacity: 1; }
 }
 
-.toast.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(-10px);
-}
-
+/* LIGHTBOX */
 .lightbox {
     display: none;
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.9);
+    inset: 0;
+    background: rgba(0,0,0,0.92);
     justify-content: center;
     align-items: center;
     z-index: 999;
 }
 
 .lightbox img {
-    max-width: 90%;
-    max-height: 90%;
-    border-radius: 10px;
+    max-width: 92%;
+    max-height: 92%;
+    border-radius: 12px;
 }
 
-</style>
+/* TOAST */
+.toast {
+    position: fixed;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #4caf50;
+    color: white;
+    padding: 12px 18px;
+    border-radius: 10px;
+    opacity: 0;
+    transition: 0.3s;
+}
 
+.toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-8px);
+}
+</style>
 </head>
 
 <body>
 
 <h1>📸 Boda de Mamá</h1>
-
-<p>Sube aquí fotos y vídeos del evento 💍❤️</p>
+<p>Fotos en tiempo real entre todos los móviles 💍</p>
 
 <button id="upload_widget">Subir fotos</button>
+<div id="counter">0 fotos</div>
 
 <div id="gallery"></div>
 
@@ -113,61 +123,153 @@ button:hover{
 
 <div id="toast" class="toast"></div>
 
+<!-- CLOUDINARY -->
 <script src="https://upload-widget.cloudinary.com/latest/global/all.js"></script>
+
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
 <script>
 
+/* =========================
+   CONFIG
+========================= */
+
+const CLOUD_NAME = "dczhox5iy";
+const UPLOAD_PRESET = "boda_mama";
+
+/* 🔥 FIREBASE (RELLENA ESTO) */
+const firebaseConfig = {
+  apiKey: "AIzaSyB_FAPmCzrLg5J1mlATWuYfNL2afZm4z7s",
+  authDomain: "boda-fotos-b2125.firebaseapp.com",
+  databaseURL: "https://boda-fotos-b2125-default-rtdb.europe-west1.firebasedatabase.app/",
+  projectId: "boda-fotos-b2125",
+  storageBucket: "boda-fotos-b2125.firebasestorage.app",
+  messagingSenderId: "1003527625683",
+  appId: "1:1003527625683:web:7e8c11d979d641005fad26",
+  measurementId: "G-Y708N9Q37R"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+/* =========================
+   STATE
+========================= */
+
+let images = [];
+
 const gallery = document.getElementById("gallery");
 const toast = document.getElementById("toast");
+const counter = document.getElementById("counter");
 
 const lightbox = document.getElementById("lightbox");
 const lightboxImg = document.getElementById("lightbox-img");
+
+/* =========================
+   UI
+========================= */
+
+function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 2000);
+}
+
+function updateCounter() {
+    counter.textContent = `${images.length} fotos`;
+}
+
+function openImage(url) {
+    lightboxImg.src = url;
+    lightbox.style.display = "flex";
+}
 
 lightbox.addEventListener("click", () => {
     lightbox.style.display = "none";
 });
 
-function showToast(message, isError = false) {
-    toast.innerText = message;
-    toast.style.background = isError ? "#e53935" : "#4caf50";
-    toast.classList.add("show");
+/* =========================
+   RENDER
+========================= */
 
-    setTimeout(() => {
-        toast.classList.remove("show");
-    }, 2500);
+function renderGallery() {
+    gallery.innerHTML = "";
+
+    images.forEach(url => {
+        const img = document.createElement("img");
+        img.src = url;
+        img.onclick = () => openImage(url);
+        gallery.appendChild(img);
+    });
+
+    updateCounter();
 }
 
-const widget = cloudinary.createUploadWidget({
-    cloudName: "dczhox5iy",
-    uploadPreset: "boda_mama",
-    multiple: true,
-    sources: ["local", "camera"],
-    showAdvancedOptions: false
-}, (error, result) => {
+/* =========================
+   FIREBASE LISTENER (🔥 REAL TIME)
+========================= */
 
-    if (result && result.event === "upload-added") {
-        showToast("📤 Preparando subida...");
+db.ref("photos").on("value", (snapshot) => {
+    const data = snapshot.val();
+
+    images = [];
+
+    if (data) {
+        Object.values(data).forEach(item => {
+            images.push(item.url);
+        });
     }
 
-    if (result && result.event === "success") {
+    renderGallery();
+});
 
-        showToast("📸 Foto subida correctamente");
+/* =========================
+   SAVE TO FIREBASE
+========================= */
 
-        const img = document.createElement("img");
-        img.src = result.info.secure_url;
+function savePhoto(url) {
+    const ref = db.ref("photos").push();
 
-        img.addEventListener("click", () => {
-            lightboxImg.src = result.info.secure_url;
-            lightbox.style.display = "flex";
-        });
+    ref.set({
+        url: url,
+        createdAt: Date.now()
+    });
+}
 
-        gallery.appendChild(img);
+/* =========================
+   CLOUDINARY UPLOAD
+========================= */
+
+const widget = cloudinary.createUploadWidget({
+    cloudName: CLOUD_NAME,
+    uploadPreset: UPLOAD_PRESET,
+    multiple: true,
+    sources: ["local", "camera"]
+}, (error, result) => {
+
+    if (result?.event === "upload-added") {
+        showToast("📤 Subiendo...");
+    }
+
+    if (result?.event === "success") {
+        const url = result.info.secure_url;
+
+        // 🔥 SOLO guardamos en Firebase
+        savePhoto(url);
+
+        showToast("📸 Foto añadida");
     }
 
     if (error) {
-        showToast("❌ Error al subir foto", true);
+        showToast("❌ Error al subir");
     }
 });
+
+/* =========================
+   BUTTON
+========================= */
 
 document.getElementById("upload_widget").addEventListener("click", () => {
     widget.open();
