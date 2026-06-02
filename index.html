@@ -4,72 +4,113 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Boda ❤️ Fotos</title>
+<title>Álbum de la boda de Miguel y Vanessa</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 
 <style>
+
+/* 🌸 BACKGROUND PREMIUM */
 body {
-    font-family: Arial, sans-serif;
-    text-align: center;
     margin: 0;
-    padding: 30px;
-    background: #fafafa;
+    font-family: 'Inter', sans-serif;
+    background: radial-gradient(circle at top, #fff6f8, #f7f7fb);
+    overflow-x: hidden;
 }
 
-h1 { font-size: 34px; }
-
-p { color: #666; }
-
-/* BOTÓN */
-button {
-    font-size: 18px;
-    padding: 16px 22px;
-    border: none;
-    background: linear-gradient(135deg, #e91e63, #ff4081);
-    color: white;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: 0.2s;
+/* 🌿 HEADER APP STYLE */
+header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    backdrop-filter: blur(10px);
+    background: rgba(255,255,255,0.7);
+    padding: 18px 12px;
+    text-align: center;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
 }
 
-button:hover {
-    transform: translateY(-2px);
+header h1 {
+    margin: 0;
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    color: #c06c84;
 }
 
-/* CONTADOR */
+header p {
+    margin: 5px 0 0;
+    font-size: 13px;
+    color: #666;
+}
+
+/* 📊 COUNTER */
 #counter {
-    margin-top: 10px;
-    font-weight: bold;
-    color: #444;
+    margin-top: 6px;
+    font-size: 12px;
+    color: #888;
 }
 
-/* GALERÍA */
-#gallery {
-    margin-top: 30px;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 12px;
+/* 🔘 SWITCH */
+.switch {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 12px;
 }
 
-#gallery img {
-    width: 100%;
-    height: 160px;
-    object-fit: cover;
-    border-radius: 14px;
+.switch button {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 999px;
+    background: #eee;
+    font-size: 13px;
     cursor: pointer;
-    opacity: 0;
-    animation: fadeIn 0.3s ease forwards;
     transition: 0.2s;
 }
 
-#gallery img:hover {
-    transform: scale(1.05);
+.switch button.active {
+    background: linear-gradient(135deg, #d36b8d, #ff9bb5);
+    color: white;
+}
+
+/* 📸 GALERÍA PREMIUM */
+#gallery {
+    max-width: 1100px;
+    margin: 20px auto 90px;
+    padding: 0 12px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+}
+
+.item {
+    opacity: 0;
+    transform: scale(0.96);
+    animation: fadeIn 0.35s ease forwards;
 }
 
 @keyframes fadeIn {
-    to { opacity: 1; }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
-/* LIGHTBOX */
+img, video {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 14px;
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+    transition: 0.2s;
+}
+
+img:hover, video:hover {
+    transform: scale(1.03);
+}
+
+/* 🔳 LIGHTBOX */
 .lightbox {
     display: none;
     position: fixed;
@@ -80,48 +121,73 @@ button:hover {
     z-index: 999;
 }
 
-.lightbox img {
+.lightbox img,
+.lightbox video {
     max-width: 92%;
     max-height: 92%;
     border-radius: 12px;
 }
 
-/* TOAST */
+/* 🔔 TOAST PREMIUM */
 .toast {
     position: fixed;
-    bottom: 25px;
+    bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
-    background: #4caf50;
+    background: rgba(0,0,0,0.8);
     color: white;
-    padding: 12px 18px;
-    border-radius: 10px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 13px;
     opacity: 0;
     transition: 0.3s;
 }
 
 .toast.show {
     opacity: 1;
-    transform: translateX(-50%) translateY(-8px);
+    transform: translateX(-50%) translateY(-6px);
 }
+
+/* ➕ FLOATING BUTTON */
+.fab {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: none;
+    font-size: 24px;
+    background: linear-gradient(135deg, #d36b8d, #ff9bb5);
+    color: white;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    cursor: pointer;
+}
+
 </style>
 </head>
 
 <body>
 
-<h1>📸 Boda de Mamá</h1>
-<p>Fotos en tiempo real entre todos los móviles 💍</p>
+<header>
+    <h1>💍 Álbum de Miguel & Vanessa</h1>
+    <p>💖 Comparte momentos únicos ✨</p>
 
-<button id="upload_widget">Subir fotos</button>
-<div id="counter">0 fotos</div>
+    <div id="counter">0 recuerdos</div>
+
+    <div class="switch">
+        <button id="btnPhotos" class="active">📸 Fotos</button>
+        <button id="btnVideos">🎥 Vídeos</button>
+    </div>
+</header>
 
 <div id="gallery"></div>
 
-<div id="lightbox" class="lightbox">
-    <img id="lightbox-img">
-</div>
+<div class="lightbox" id="lightbox"></div>
 
-<div id="toast" class="toast"></div>
+<div class="toast" id="toast"></div>
+
+<button class="fab" id="uploadBtn">➕</button>
 
 <!-- CLOUDINARY -->
 <script src="https://upload-widget.cloudinary.com/latest/global/all.js"></script>
@@ -131,24 +197,22 @@ button:hover {
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
 <script>
-    
+
 /* =========================
    PWD BASICA
 ========================= */
-const acceso = prompt("Introduce la clave de acceso");
+/*const acceso = prompt("Introduce la clave de acceso");
 
 if (acceso !== "BodaVM2026") {
     document.body.innerHTML = "<h1>🔒 Sitio en preparación</h1>";
-}
-    
-/* =========================
-   CONFIG
-========================= */
+}*/
+
 
 const CLOUD_NAME = "dczhox5iy";
 const UPLOAD_PRESET = "boda_mama";
 
-/* 🔥 FIREBASE (RELLENA ESTO) */
+
+/* 🔥 FIREBASE  */
 const firebaseConfig = {
   apiKey: "AIzaSyB_FAPmCzrLg5J1mlATWuYfNL2afZm4z7s",
   authDomain: "boda-fotos-b2125.firebaseapp.com",
@@ -163,22 +227,12 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-/* =========================
-   STATE
-========================= */
-
-let images = [];
+let mode = "photos";
+let items = [];
 
 const gallery = document.getElementById("gallery");
-const toast = document.getElementById("toast");
 const counter = document.getElementById("counter");
-
-const lightbox = document.getElementById("lightbox");
-const lightboxImg = document.getElementById("lightbox-img");
-
-/* =========================
-   UI
-========================= */
+const toast = document.getElementById("toast");
 
 function showToast(msg) {
     toast.textContent = msg;
@@ -186,103 +240,105 @@ function showToast(msg) {
     setTimeout(() => toast.classList.remove("show"), 2000);
 }
 
-function updateCounter() {
-    counter.textContent = `${images.length} fotos`;
+/* SWITCH */
+document.getElementById("btnPhotos").onclick = () => {
+    mode = "photos";
+    setActive();
+    render();
+};
+
+document.getElementById("btnVideos").onclick = () => {
+    mode = "videos";
+    setActive();
+    render();
+};
+
+function setActive() {
+    document.getElementById("btnPhotos").classList.toggle("active", mode==="photos");
+    document.getElementById("btnVideos").classList.toggle("active", mode==="videos");
 }
 
-function openImage(url) {
-    lightboxImg.src = url;
-    lightbox.style.display = "flex";
-}
-
-lightbox.addEventListener("click", () => {
-    lightbox.style.display = "none";
-});
-
-/* =========================
-   RENDER
-========================= */
-
-function renderGallery() {
+/* RENDER */
+function render() {
     gallery.innerHTML = "";
 
-    images.forEach(url => {
-        const img = document.createElement("img");
-        img.src = url;
-        img.onclick = () => openImage(url);
-        gallery.appendChild(img);
-    });
+    let filtered = items.filter(i => i.type === mode);
 
-    updateCounter();
+    counter.textContent = `${filtered.length} recuerdos`;
+
+    filtered.forEach(i => {
+
+        const wrapper = document.createElement("div");
+        wrapper.className = "item";
+
+        if (i.type === "photos") {
+            wrapper.innerHTML = `<img src="${i.url}">`;
+            wrapper.onclick = () => openMedia(i.url, "image");
+        } else {
+            wrapper.innerHTML = `<video src="${i.url}" muted autoplay loop></video>`;
+            wrapper.onclick = () => openMedia(i.url, "video");
+        }
+
+        gallery.appendChild(wrapper);
+    });
 }
 
-/* =========================
-   FIREBASE LISTENER (🔥 REAL TIME)
-========================= */
+/* LIGHTBOX */
+function openMedia(url, type) {
+    const lb = document.getElementById("lightbox");
+    lb.innerHTML = "";
 
-db.ref("photos").on("value", (snapshot) => {
-    const data = snapshot.val();
-
-    images = [];
-
-    if (data) {
-        Object.values(data).forEach(item => {
-            images.push(item.url);
-        });
+    if (type === "image") {
+        lb.innerHTML = `<img src="${url}">`;
+    } else {
+        lb.innerHTML = `<video src="${url}" controls autoplay></video>`;
     }
 
-    renderGallery();
-});
-
-/* =========================
-   SAVE TO FIREBASE
-========================= */
-
-function savePhoto(url) {
-    const ref = db.ref("photos").push();
-
-    ref.set({
-        url: url,
-        createdAt: Date.now()
-    });
+    lb.style.display = "flex";
 }
 
-/* =========================
-   CLOUDINARY UPLOAD
-========================= */
+document.getElementById("lightbox").onclick = () => {
+    document.getElementById("lightbox").style.display = "none";
+};
 
+/* UPLOAD */
 const widget = cloudinary.createUploadWidget({
     cloudName: CLOUD_NAME,
     uploadPreset: UPLOAD_PRESET,
     multiple: true,
-    sources: ["local", "camera"]
+    resourceType: "auto"
 }, (error, result) => {
 
-    if (result?.event === "upload-added") {
-        showToast("📤 Subiendo...");
-    }
+    if (result && result.event === "success") {
 
-    if (result?.event === "success") {
         const url = result.info.secure_url;
+        const type = result.info.resource_type === "video" ? "videos" : "photos";
 
-        // 🔥 SOLO guardamos en Firebase
-        savePhoto(url);
+        db.ref("items").push({
+            url,
+            type,
+            createdAt: Date.now()
+        });
 
-        showToast("📸 Foto añadida");
-    }
-
-    if (error) {
-        showToast("❌ Error al subir");
+        showToast("✨ Subido con éxito");
     }
 });
 
-/* =========================
-   BUTTON
-========================= */
+document.getElementById("uploadBtn").onclick = () => widget.open();
 
-document.getElementById("upload_widget").addEventListener("click", () => {
-    widget.open();
+/* LOAD */
+db.ref("items").on("value", snap => {
+
+    items = [];
+
+    if (snap.val()) {
+        Object.values(snap.val()).forEach(i => items.push(i));
+    }
+
+    render();
 });
+
+setActive();
 
 </script>
 
