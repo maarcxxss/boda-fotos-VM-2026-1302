@@ -115,16 +115,31 @@ img:hover, video:hover {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.92);
+    background: rgba(0,0,0,0.95);
     justify-content: center;
     align-items: center;
     z-index: 999;
+    padding: 20px;
+    box-sizing: border-box;
 }
 
+/* CONTENEDOR INTERNO */
+.lightbox-content {
+    max-width: 100%;
+    max-height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* MEDIA */
 .lightbox img,
 .lightbox video {
-    max-width: 92%;
-    max-height: 92%;
+    max-width: 100%;
+    max-height: 90vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
     border-radius: 12px;
 }
 
@@ -183,7 +198,9 @@ img:hover, video:hover {
 
 <div id="gallery"></div>
 
-<div class="lightbox" id="lightbox"></div>
+<div class="lightbox" id="lightbox">
+    <div class="lightbox-content" id="lightboxContent"></div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -286,20 +303,26 @@ function render() {
 /* LIGHTBOX */
 function openMedia(url, type) {
     const lb = document.getElementById("lightbox");
-    lb.innerHTML = "";
+    const content = document.getElementById("lightboxContent");
+
+    content.innerHTML = "";
 
     if (type === "image") {
-        lb.innerHTML = `<img src="${url}">`;
+        content.innerHTML = `<img src="${url}">`;
     } else {
-        lb.innerHTML = `<video src="${url}" controls autoplay></video>`;
+        content.innerHTML = `
+            <video src="${url}" controls autoplay></video>
+        `;
     }
 
     lb.style.display = "flex";
 }
 
-document.getElementById("lightbox").onclick = () => {
-    document.getElementById("lightbox").style.display = "none";
-};
+document.getElementById("lightbox").onclick = (e) => {
+    if (e.target.id === "lightbox") {
+        document.getElementById("lightbox").style.display = "none";
+    }
+}
 
 /* UPLOAD */
 const widget = cloudinary.createUploadWidget({
