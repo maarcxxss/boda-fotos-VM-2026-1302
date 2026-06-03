@@ -246,6 +246,7 @@ const db = firebase.database();
 
 let scale = 1;
 let initialDistance = null;
+
 let currentVideo = null;
 let mode = "photos";
 let items = [];
@@ -319,6 +320,8 @@ function openMedia(url, type) {
     }
 
     lb.style.display = "flex";
+
+    resetZoom();
 }
 
 /* pinch zoom real (móvil) */
@@ -326,33 +329,68 @@ document.addEventListener("gesturestart", e => e.preventDefault());
 
 const lightboxContent = document.getElementById("lightboxContent");
 
+lightboxContent.addEventListener("touchstart", (e) => {
+
+    if (e.touches.length === 2) {
+        let dx = e.touches[0].clientX - e.touches[1].clientX;
+        let dy = e.touches[0].clientY - e.touches[1].clientY;
+
+        initialDistance = Math.sqrt(dx * dx + dy * dy);
+    }
+});
+
 lightboxContent.addEventListener("touchmove", (e) => {
 
     if (e.touches.length === 2) {
 
+        e.preventDefault();
+
         let dx = e.touches[0].clientX - e.touches[1].clientX;
         let dy = e.touches[0].clientY - e.touches[1].clientY;
 
-        let distance = Math.sqrt(dx*dx + dy*dy);
+        let distance = Math.sqrt(dx * dx + dy * dy);
 
-        if (!initialDistance) initialDistance = distance;
+        if (!initialDistance) return;
 
         scale = distance / initialDistance;
+
+        // LIMITES PRO
+        scale = Math.max(1, Math.min(scale, 3));
 
         const media = document.getElementById("activeMedia");
 
         if (media) {
             media.style.transform = `scale(${scale})`;
+            media.style.transition = "none";
         }
     }
-});
+}, { passive: false });
 
 lightboxContent.addEventListener("touchend", () => {
+
     initialDistance = null;
+
+    const media = document.getElementById("activeMedia");
+
+    if (media) {
+        media.style.transition = "transform 0.2s ease";
+    }
+
+    scale = Math.max(1, Math.min(scale, 3));
 });
 
+function resetZoom() {
+    scale = 1;
+
+    const media = document.getElementById("activeMedia");
+    if (media) {
+        media.style.transform = "scale(1)";
+        media.style.transition = "transform 0.2s ease";
+    }
+}
 
 
+/* cierre lightbox */
 document.getElementById("lightbox").onclick = (e) => {
     if (e.target.id === "lightbox") {
 
@@ -361,6 +399,8 @@ document.getElementById("lightbox").onclick = (e) => {
             video.pause();
             video.currentTime = 0;
         }
+
+        resetZoom();
 
         document.getElementById("lightbox").style.display = "none";
     }
