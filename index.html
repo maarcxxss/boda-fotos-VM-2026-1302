@@ -656,10 +656,24 @@ document.getElementById("lightbox").onclick = (e) => {
 
 /* UPLOAD */
 const widget = cloudinary.createUploadWidget({
+    
     cloudName: CLOUD_NAME,
     uploadPreset: UPLOAD_PRESET,
+
     multiple: true,
-    resourceType: "auto"
+
+    resourceType: "auto",
+
+    sources: [
+        "local",
+        "camera"
+    ],
+
+    showAdvancedOptions: false,
+
+    showCompletedButton: true,
+
+    singleUploadAutoClose: false
 }, (error, result) => {
 
     if (result && result.event === "success") {
