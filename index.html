@@ -398,6 +398,9 @@ let currentVideo = null;
 
 let adminMode = false;
 
+/* para lanar corazones despues de cerrar widget */
+let pendingUploads = 0;
+
 let mode = "photos";
 let items = [];
 
@@ -659,24 +662,20 @@ const widget = cloudinary.createUploadWidget({
     
     cloudName: CLOUD_NAME,
     uploadPreset: UPLOAD_PRESET,
-
     multiple: true,
-
     resourceType: "auto",
-
-    sources: [
-        "local",
-        "camera"
-    ],
-
+    sources: ["local", "camera"],
     showAdvancedOptions: false,
-
     showCompletedButton: true,
-
     singleUploadAutoClose: false
+
 }, (error, result) => {
 
-    if (result && result.event === "success") {
+    if (result?.event === "upload-added") {
+        pendingUploads++;
+    }
+
+    if (result?.event === "success") {
 
         const url = result.info.secure_url;
         const type = result.info.resource_type === "video" ? "videos" : "photos";
@@ -687,8 +686,19 @@ const widget = cloudinary.createUploadWidget({
             createdAt: Date.now()
         });
 
-        showToast("✨ Subido con éxito");
-        launchHearts();
+        pendingUploads--;
+    }
+
+    if (result?.event === "close") {
+
+        if (pendingUploads <= 0) {
+            launchHearts();
+            showToast("✨ Subido con éxito");
+        }
+    }
+
+    if (error) {
+        showToast("❌ Error al subir");
     }
 });
 
