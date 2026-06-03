@@ -185,7 +185,7 @@ img:hover, video:hover {
 <body>
 
 <header>
-    <h1>💍 Álbum de Miguel & Vanessa</h1>
+    <h1 id="title">💍 Álbum de Miguel & Vanessa</h1>
     <p>💖 Comparte momentos únicos ✨</p>
 
     <div id="counter">0 recuerdos</div>
@@ -264,6 +264,9 @@ let lastTap = 0;
 
 
 let currentVideo = null;
+
+let adminMode = false;
+
 let mode = "photos";
 let items = [];
 
@@ -277,7 +280,7 @@ function showToast(msg) {
     setTimeout(() => toast.classList.remove("show"), 2000);
 }
 
-/* SWITCH */
+/* SWITCH FOTOS-VIDEOS */
 document.getElementById("btnPhotos").onclick = () => {
     mode = "photos";
     setActive();
@@ -306,6 +309,7 @@ function render() {
     filtered.forEach(i => {
 
         const wrapper = document.createElement("div");
+        wrapper.style.position = "relative";
         wrapper.className = "item";
 
         if (i.type === "photos") {
@@ -314,6 +318,40 @@ function render() {
         } else {
             wrapper.innerHTML = `<video src="${i.url}" muted autoplay loop></video>`;
             wrapper.onclick = () => openMedia(i.url, "video");
+        }
+
+        /* Para el modo admin */
+        if (adminMode) {
+
+            const del = document.createElement("button");
+
+            del.innerHTML = "🗑️";
+
+            del.style.position = "absolute";
+            del.style.top = "8px";
+            del.style.right = "8px";
+            del.style.width = "36px";
+            del.style.height = "36px";
+            del.style.borderRadius = "50%";
+            del.style.border = "none";
+            del.style.cursor = "pointer";
+            del.style.background = "rgba(255,0,0,0.85)";
+            del.style.color = "white";
+            del.style.fontSize = "18px";
+
+            del.onclick = (e) => {
+
+                e.stopPropagation();
+
+                if (confirm("¿Eliminar este archivo?")) {
+
+                    db.ref("items/" + i.id).remove();
+
+                    showToast("🗑️ Eliminado");
+                }
+            };
+
+            wrapper.appendChild(del);
         }
 
         gallery.appendChild(wrapper);
@@ -483,6 +521,8 @@ document.getElementById("lightbox").onclick = (e) => {
     }
 };
 
+
+
 /* UPLOAD */
 const widget = cloudinary.createUploadWidget({
     cloudName: CLOUD_NAME,
@@ -514,13 +554,58 @@ db.ref("items").on("value", snap => {
     items = [];
 
     if (snap.val()) {
-        Object.values(snap.val()).forEach(i => items.push(i));
+
+        Object.entries(snap.val()).forEach(([key, value]) => {
+
+            items.push({
+                id: key,
+                ...value
+            });
+
+        });
     }
 
     render();
 });
 
+
+
 setActive();
+
+
+
+/* ACTIVACION MODO ADMIN */
+let tapCount = 0;
+
+document.getElementById("title").addEventListener("click", () => {
+
+    tapCount++;
+    //console.log("tap", tapCount);
+
+    if (tapCount >= 5) {
+
+        const pwd = prompt("Modo administrador");
+
+        if (pwd === "MiguelVanessa2026") {
+
+            adminMode = !adminMode;
+
+            showToast(
+                adminMode
+                    ? "🔓 Modo admin activado"
+                    : "🔒 Modo admin desactivado"
+            );
+
+            render();
+        }
+
+        tapCount = 0;
+    }
+
+    setTimeout(() => {
+        tapCount = 0;
+    }, 2000);
+});
 
 </script>
 
