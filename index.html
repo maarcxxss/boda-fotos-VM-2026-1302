@@ -356,8 +356,13 @@ if (acceso !== "BodaVM2026") {
 }*/
 
 
+/* cloudinary pruebas - cuenta marcos */
 const CLOUD_NAME = "dczhox5iy";
 const UPLOAD_PRESET = "boda_mama";
+
+/* cloudinary boda - cuenta boda */
+//const CLOUD_NAME = "dgemhfhlc";
+//const UPLOAD_PRESET = "boda_mama";
 
 
 /* 🔥 FIREBASE  */
@@ -479,6 +484,8 @@ function render() {
                 e.stopPropagation();
 
                 if (confirm("¿Eliminar este archivo?")) {
+
+                    if (!i.id) return;
 
                     db.ref("items/" + i.id).remove();
 
@@ -668,7 +675,9 @@ const widget = cloudinary.createUploadWidget({
     sources: ["local", "camera"],
     showAdvancedOptions: false,
     showCompletedButton: true,
-    singleUploadAutoClose: false
+    singleUploadAutoClose: false,
+    maxFileSize: 80000000, // 80MB límite seguro
+    maxImageFileSize: 20000000 // 20MB imágenes
 
 }, (error, result) => {
 
@@ -677,13 +686,16 @@ const widget = cloudinary.createUploadWidget({
         anadido = true;
     }
 
-    if (result?.event === "success") {
+    if (result?.event === "success" && result.info?.secure_url) {
 
         const url = result.info.secure_url;
+        // fuerza optimización Cloudinary
+        const optimizedUrl = optimizeCloudinary(url);
+
         const type = result.info.resource_type === "video" ? "videos" : "photos";
 
         db.ref("items").push({
-            url,
+            url: optimizedUrl,
             type,
             createdAt: Date.now()
         });
@@ -696,13 +708,22 @@ const widget = cloudinary.createUploadWidget({
         if (pendingUploads <= 0 && anadido == true) {
             launchHearts();
             showToast("✨ Subido con éxito");
+            anadido = false;
         }
     }
 
     if (error) {
-        showToast("❌ Error al subir");
+        showToast("⚠️ Error subiendo, inténtalo otra vez");
+        console.error(error);
     }
 });
+
+
+function optimizeCloudinary(url) {
+    if (!url.includes("/upload/")) return url;
+    return url.replace("/upload/", "/upload/f_auto,q_auto,w_1200/");
+}
+
 
 document.getElementById("uploadBtn").onclick = () => widget.open();
 
