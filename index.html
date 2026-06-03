@@ -399,6 +399,7 @@ let currentVideo = null;
 let adminMode = false;
 
 /* para lanar corazones despues de cerrar widget */
+let anadido = false;
 let pendingUploads = 0;
 
 let mode = "photos";
@@ -673,6 +674,7 @@ const widget = cloudinary.createUploadWidget({
 
     if (result?.event === "upload-added") {
         pendingUploads++;
+        anadido = true;
     }
 
     if (result?.event === "success") {
@@ -691,7 +693,7 @@ const widget = cloudinary.createUploadWidget({
 
     if (result?.event === "close") {
 
-        if (pendingUploads <= 0) {
+        if (pendingUploads <= 0 && anadido == true) {
             launchHearts();
             showToast("✨ Subido con éxito");
         }
