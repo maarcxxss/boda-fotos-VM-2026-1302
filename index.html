@@ -244,8 +244,24 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
+/* variables zoom insta */
 let scale = 1;
+let lastScale = 1;
 let initialDistance = null;
+
+let startX = 0;
+let startY = 0;
+
+let originX = 0;
+let originY = 0;
+
+let translateX = 0;
+let translateY = 0;
+
+let isPanning = false;
+let lastTap = 0;
+
+
 
 let currentVideo = null;
 let mode = "photos";
@@ -331,16 +347,32 @@ const lightboxContent = document.getElementById("lightboxContent");
 
 lightboxContent.addEventListener("touchstart", (e) => {
 
+    const media = document.getElementById("activeMedia");
+    if (!media) return;
+
     if (e.touches.length === 2) {
+
         let dx = e.touches[0].clientX - e.touches[1].clientX;
         let dy = e.touches[0].clientY - e.touches[1].clientY;
 
         initialDistance = Math.sqrt(dx * dx + dy * dy);
+        lastScale = scale;
+    }
+
+    if (e.touches.length === 1 && scale > 1) {
+        isPanning = true;
+
+        startX = e.touches[0].clientX - translateX;
+        startY = e.touches[0].clientY - translateY;
     }
 });
 
 lightboxContent.addEventListener("touchmove", (e) => {
 
+    const media = document.getElementById("activeMedia");
+    if (!media) return;
+
+    // PINCH
     if (e.touches.length === 2) {
 
         e.preventDefault();
@@ -352,39 +384,84 @@ lightboxContent.addEventListener("touchmove", (e) => {
 
         if (!initialDistance) return;
 
-        scale = distance / initialDistance;
+        scale = lastScale * (distance / initialDistance);
 
-        // LIMITES PRO
         scale = Math.max(1, Math.min(scale, 3));
 
-        const media = document.getElementById("activeMedia");
+        media.style.transform =
+            `translate(${translateX}px, ${translateY}px) scale(${scale})`;
 
-        if (media) {
-            media.style.transform = `scale(${scale})`;
-            media.style.transition = "none";
-        }
+        media.style.transition = "none";
     }
+
+    // PAN
+    if (e.touches.length === 1 && isPanning && scale > 1) {
+
+        e.preventDefault();
+
+        translateX = e.touches[0].clientX - startX;
+        translateY = e.touches[0].clientY - startY;
+
+        media.style.transform =
+            `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+    }
+
 }, { passive: false });
 
 lightboxContent.addEventListener("touchend", () => {
 
     initialDistance = null;
+    isPanning = false;
 
     const media = document.getElementById("activeMedia");
+    if (!media) return;
 
-    if (media) {
-        media.style.transition = "transform 0.2s ease";
+    media.style.transition = "transform 0.2s ease";
+
+    // si vuelve a 1, reset de pan
+    if (scale <= 1) {
+        scale = 1;
+        translateX = 0;
+        translateY = 0;
+
+        media.style.transform = "scale(1)";
+    }
+});
+
+lightboxContent.addEventListener("touchend", (e) => {
+
+    const now = Date.now();
+    const media = document.getElementById("activeMedia");
+    if (!media) return;
+
+    if (now - lastTap < 300) {
+
+        if (scale > 1) {
+            scale = 1;
+            translateX = 0;
+            translateY = 0;
+        } else {
+            scale = 2.5;
+        }
+
+        media.style.transition = "transform 0.25s ease";
+        media.style.transform =
+            `translate(0px,0px) scale(${scale})`;
     }
 
-    scale = Math.max(1, Math.min(scale, 3));
+    lastTap = now;
 });
+
 
 function resetZoom() {
     scale = 1;
+    lastScale = 1;
+    translateX = 0;
+    translateY = 0;
 
     const media = document.getElementById("activeMedia");
     if (media) {
-        media.style.transform = "scale(1)";
+        media.style.transform = "translate(0px,0px) scale(1)";
         media.style.transition = "transform 0.2s ease";
     }
 }
