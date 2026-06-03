@@ -9,6 +9,78 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 
 <style>
+/* PANTALLA BIENVENIDA */
+#welcomeScreen{
+    position:fixed;
+    inset:0;
+    z-index:9999;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    background:
+    linear-gradient(
+        135deg,
+        #fff7f8,
+        #fffdfc
+    );
+}
+
+.welcome-card{
+    text-align:center;
+    max-width:500px;
+    padding:40px;
+}
+
+.rings{
+    font-size:70px;
+    animation: floatRing 3s ease-in-out infinite;
+}
+
+@keyframes floatRing{
+    50%{
+        transform:translateY(-10px);
+    }
+}
+
+.welcome-card h1{
+    font-family:'Playfair Display', serif;
+    color:#c06c84;
+    margin:20px 0;
+    font-size:42px;
+}
+
+.welcome-card p{
+    color:#666;
+    font-size:18px;
+    line-height:1.6;
+}
+
+#enterAlbum{
+    margin-top:30px;
+    padding:15px 28px;
+    border:none;
+    border-radius:999px;
+
+    background:
+    linear-gradient(
+        135deg,
+        #d36b8d,
+        #ff9bb5
+    );
+
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+}
+
+.welcome-hide{
+    opacity:0;
+    pointer-events:none;
+    transition:0.6s;
+}
+
 
 /* 🌸 BACKGROUND PREMIUM */
 body {
@@ -179,11 +251,69 @@ img:hover, video:hover {
     cursor: pointer;
 }
 
+/* EFECTO DE CORAZONES */
+.heart{
+
+    position:fixed;
+
+    bottom:80px;
+    left:50%;
+
+    font-size:28px;
+
+    pointer-events:none;
+
+    animation:
+        heartFloat 2.5s ease-out forwards;
+}
+
+@keyframes heartFloat{
+
+    0%{
+        opacity:1;
+        transform:
+            translateX(0)
+            translateY(0)
+            scale(1);
+    }
+
+    100%{
+        opacity:0;
+        transform:
+            translateX(var(--x))
+            translateY(-250px)
+            scale(1.8);
+    }
+}
+
 </style>
 </head>
 
 <body>
 
+<!-- PANTALLA BIENVENIDA -->
+<div id="welcomeScreen">
+
+    <div class="welcome-card">
+
+        <div class="rings">💍</div>
+
+        <h1>Miguel & Vanessa</h1>
+
+        <p>
+            Gracias por acompañarnos en uno de los días
+            más importantes de nuestra vida ❤️
+        </p>
+
+        <button id="enterAlbum">
+            Entrar al álbum
+        </button>
+
+    </div>
+
+</div>
+
+<!-- HEADER ALBUM -->
 <header>
     <h1 id="title">💍 Álbum de Miguel & Vanessa</h1>
     <p>💖 Comparte momentos únicos ✨</p>
@@ -196,6 +326,7 @@ img:hover, video:hover {
     </div>
 </header>
 
+<!-- GALERIA ALBUM -->
 <div id="gallery"></div>
 
 <div class="lightbox" id="lightbox">
@@ -543,6 +674,7 @@ const widget = cloudinary.createUploadWidget({
         });
 
         showToast("✨ Subido con éxito");
+        launchHearts();
     }
 });
 
@@ -565,6 +697,7 @@ db.ref("items").on("value", snap => {
         });
     }
 
+    items.sort((a,b) => b.createdAt - a.createdAt);
     render();
 });
 
@@ -606,6 +739,46 @@ document.getElementById("title").addEventListener("click", () => {
         tapCount = 0;
     }, 2000);
 });
+
+/* para la pantalla de bienvenida */
+document.getElementById("enterAlbum").onclick = () => {
+
+    const screen =
+        document.getElementById("welcomeScreen");
+
+    screen.classList.add("welcome-hide");
+
+    setTimeout(() => {
+        screen.remove();
+    }, 600);
+};
+
+/* EFECTO PARA LOS CORAZONES */
+function launchHearts(){
+
+    for(let i=0;i<8;i++){
+
+        const heart =
+            document.createElement("div");
+
+        heart.className = "heart";
+
+        heart.innerHTML =
+            ["❤️","💖","💕","💗"]
+            [Math.floor(Math.random()*4)];
+
+        heart.style.setProperty(
+            "--x",
+            `${Math.random()*200-100}px`
+        );
+
+        document.body.appendChild(heart);
+
+        setTimeout(() => {
+            heart.remove();
+        }, 2500);
+    }
+}
 
 </script>
 
